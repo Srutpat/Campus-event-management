@@ -9,7 +9,7 @@ import StudentDashboard     from "./pages/student/StudentDashboard";
 import StudentEvents        from "./pages/student/StudentEvents";
 import StudentRegistrations from "./pages/student/StudentRegistrations";
 
-import OrganizerDashboard    from "./pages/organizer/OrganizerDashboard";
+import OrganizerDashboard    from "./pages/organizer/OrganizerParticipants";
 import CreateEvent           from "./pages/organizer/CreateEvent";
 import OrganizerParticipants from "./pages/organizer/OrganizerParticipants";
 import SubmitBudget          from "./pages/organizer/SubmitBudget";
