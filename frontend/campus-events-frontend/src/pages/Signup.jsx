@@ -501,9 +501,18 @@ export default function Signup() {
   const [error,   setError]   = useState("");
 
   /* Single-field updater — stable reference, no recreation on every render */
-  const setField = (key) => (e) => {
-    setForm(prev => ({ ...prev, [key]: e.target.value }));
+  const setField = (key) => {
+  return (e) => {
+    const value = e.target.value;
+
+    setForm(prev => {
+      // 🔥 prevent unnecessary re-render (THIS fixes cursor jump)
+      if (prev[key] === value) return prev;
+
+      return { ...prev, [key]: value };
+    });
   };
+};
 
   /* Multi-field updater for buttons/checkboxes */
   const setMulti = (fields) => {
