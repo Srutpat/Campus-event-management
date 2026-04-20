@@ -4,27 +4,25 @@ import DashboardLayout   from "../../layouts/DashboardLayout";
 import PageHeader        from "../../components/PageHeader";
 import ApprovalModal     from "../../components/ApprovalModal";
 import EventDetailDrawer from "../../components/EventDetailDrawer";
-import WorkflowBadge     from "../../components/WorkFlowBadge";
+import WorkflowBadge     from "../../components/WorkflowBadge";
 import { safeArray, getStatus, formatDateTime, filterForSDW } from "../../utils";
-import { Eye, CheckCircle, ArrowRight, Info, IndianRupee } from "lucide-react";
+import { Eye, CheckCircle, Info, IndianRupee } from "lucide-react";
 
 const TABS = [
-  { key:"PENDING_SDW",  label:"Pending Review"   },
-  { key:"SDW_APPROVED", label:"Approved by Me"   },
-  { key:"SDW_REJECTED", label:"Rejected"         },
-  { key:"PENDING_HOD",  label:"Forwarded to HoD" },
+  { key:"PENDING_SDW", label:"Pending Review"   },
+  { key:"PENDING_HOD", label:"Approved → At HoD"},
+  { key:"APPROVED",    label:"Live Events"       },
+  { key:"REJECTED",    label:"Rejected"          },
 ];
 
 export default function SDWApprovals({ onLogout }) {
   const user = JSON.parse(localStorage.getItem("user"));
-
-  const [events,     setEvents]     = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [tab,        setTab]        = useState("PENDING_SDW");
-  const [modal,      setModal]      = useState(null);
-  const [drawer,     setDrawer]     = useState(null);
-  const [actioning,  setActioning]  = useState(false);
-  const [forwarding, setForwarding] = useState(null);
+  const [events,    setEvents]    = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [tab,       setTab]       = useState("PENDING_SDW");
+  const [modal,     setModal]     = useState(null);
+  const [drawer,    setDrawer]    = useState(null);
+  const [actioning, setActioning] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -39,7 +37,7 @@ export default function SDWApprovals({ onLogout }) {
   }, []);
 
   const filtered = events.filter(e => getStatus(e) === tab);
-  const count    = (key) => events.filter(e => getStatus(e) === key).length;
+  const count    = k => events.filter(e => getStatus(e) === k).length;
 
   const handleAction = async ({ action, comment }) => {
     setActioning(true);
@@ -47,28 +45,14 @@ export default function SDWApprovals({ onLogout }) {
       const res = await api.post(`/events/${modal.id}/sdw-review`, { action, comment });
       setEvents(prev => prev.map(e => e.id === modal.id ? res.data : e));
       setModal(null);
-    } catch (err) {
-      alert(err.response?.data || "Action failed.");
-    } finally { setActioning(false); }
-  };
-
-  const forwardToHod = async (ev) => {
-    setForwarding(ev.id);
-    try {
-      const res = await api.post(`/events/${ev.id}/forward-hod`);
-      setEvents(prev => prev.map(e => e.id === ev.id ? res.data : e));
-    } catch (err) {
-      alert(err.response?.data || "Failed to forward.");
-    } finally { setForwarding(null); }
+    } catch (err) { alert(err.response?.data || "Action failed."); }
+    finally { setActioning(false); }
   };
 
   return (
     <DashboardLayout onLogout={onLogout}>
       <PageHeader title="Event & Budget Review"
-        subtitle={user.department
-          ? `${user.department} dept — you do not see central/NSS events`
-          : "SDW Dean — all events including college-level"}
-      />
+        subtitle={user.department ? `${user.department} dept` : "SDW Dean — all departments"} />
 
       {user.department && (
         <div className="glass-card p-3 mb-6 flex items-start gap-3 max-w-3xl border-amber-100 bg-amber-50/50">
@@ -99,9 +83,7 @@ export default function SDWApprovals({ onLogout }) {
       </div>
 
       {loading ? (
-        <div className="space-y-3 max-w-3xl">
-          {[1,2,3].map(i => <div key={i} className="skeleton h-28 rounded-2xl"/>)}
-        </div>
+        <div className="space-y-3 max-w-3xl">{[1,2,3].map(i => <div key={i} className="skeleton h-28 rounded-2xl"/>)}</div>
       ) : filtered.length === 0 ? (
         <div className="glass-card p-12 text-center max-w-3xl">
           <p className="text-slate-400 text-sm">No events in this category.</p>
@@ -109,10 +91,8 @@ export default function SDWApprovals({ onLogout }) {
       ) : (
         <div className="space-y-4 max-w-3xl">
           {filtered.map((ev, i) => (
-            <div key={ev.id}
-              style={{ animationDelay:`${i*50}ms` }}
+            <div key={ev.id} style={{ animationDelay:`${i*50}ms` }}
               className="glass-card p-5 animate-[fadeSlideUp_0.3s_ease_both]">
-
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -120,54 +100,41 @@ export default function SDWApprovals({ onLogout }) {
                     {ev.department && <span className="badge badge-blue">{ev.department}</span>}
                     {ev.clubName   && <span className="badge badge-violet">{ev.clubName}</span>}
                   </div>
-                  <p className="text-xs text-slate-400">
-                    {ev.organizer?.name} · {formatDateTime(ev.startDate || ev.eventDate)}
-                  </p>
-
+                  <p className="text-xs text-slate-400">{ev.organizer?.name} · {formatDateTime(ev.startDate || ev.eventDate)}</p>
                   {ev.estimatedBudget ? (
                     <div className="mt-2 p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-xs">
                       <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                        <IndianRupee size={11}/>
-                        Budget: ₹{ev.estimatedBudget.toLocaleString("en-IN")}
+                        <IndianRupee size={11}/>Budget: ₹{ev.estimatedBudget.toLocaleString("en-IN")}
                       </span>
-                      {ev.budgetNotes && (
-                        <p className="text-slate-500 mt-0.5 truncate">{ev.budgetNotes}</p>
-                      )}
+                      {ev.budgetNotes && <p className="text-slate-500 mt-0.5 truncate">{ev.budgetNotes}</p>}
                     </div>
                   ) : (
                     <p className="text-xs text-amber-500 mt-1.5">⚠ No budget submitted yet</p>
                   )}
-
+                  {ev.facultyComment && (
+                    <div className="mt-2 bg-blue-50 border border-blue-100 rounded-xl p-2.5 text-xs text-slate-600">
+                      🏫 Faculty comment: {ev.facultyComment}
+                    </div>
+                  )}
                   {ev.sdwComment && tab !== "PENDING_SDW" && (
                     <div className="mt-2 bg-slate-50 rounded-xl p-2.5 text-xs text-slate-500">
                       💬 Your comment: {ev.sdwComment}
                     </div>
                   )}
                 </div>
-
                 <div className="flex flex-col gap-2 shrink-0 items-end">
-                  <div className="flex gap-2">
-                    <div onClick={() => setDrawer(ev)}
-                      className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer select-none">
-                      <Eye size={13}/> View
-                    </div>
-                    {tab === "PENDING_SDW" && (
-                      <div onClick={() => setModal(ev)}
-                        className="btn text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer select-none">
-                        <CheckCircle size={13}/> Review
-                      </div>
-                    )}
+                  <div onClick={() => setDrawer(ev)}
+                    className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer select-none">
+                    <Eye size={13}/> View
                   </div>
-                  {tab === "SDW_APPROVED" && (
-                    <button onClick={() => forwardToHod(ev)} disabled={forwarding === ev.id}
-                      className="btn text-xs px-3 py-1.5 flex items-center gap-1">
-                      <ArrowRight size={13}/>
-                      {forwarding === ev.id ? "Forwarding…" : "Forward to HoD →"}
-                    </button>
+                  {tab === "PENDING_SDW" && (
+                    <div onClick={() => setModal(ev)}
+                      className="btn text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer select-none">
+                      <CheckCircle size={13}/> Review
+                    </div>
                   )}
                 </div>
               </div>
-
               <div className="mt-4 pt-4 border-t border-slate-100">
                 <WorkflowBadge status={getStatus(ev)}/>
               </div>
@@ -176,13 +143,8 @@ export default function SDWApprovals({ onLogout }) {
         </div>
       )}
 
-      {modal && (
-        <ApprovalModal eventTitle={modal.title} onClose={() => setModal(null)}
-          onSubmit={handleAction} loading={actioning}/>
-      )}
-      {drawer && (
-        <EventDetailDrawer event={drawer} onClose={() => setDrawer(null)} showBudget={true}/>
-      )}
+      {modal && <ApprovalModal eventTitle={modal.title} onClose={() => setModal(null)} onSubmit={handleAction} loading={actioning}/>}
+      {drawer && <EventDetailDrawer event={drawer} onClose={() => setDrawer(null)} showBudget={true}/>}
     </DashboardLayout>
   );
 }

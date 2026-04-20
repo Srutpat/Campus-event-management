@@ -18,6 +18,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByOrganizerIdOrderByCreatedAtDesc(Long organizerId);
 
     List<Event> findAllByOrderByCreatedAtDesc();
+    
 
     // Dept-scoped queries for role-based filtering
     @Query("SELECT e FROM Event e WHERE e.department = :dept ORDER BY e.createdAt DESC")

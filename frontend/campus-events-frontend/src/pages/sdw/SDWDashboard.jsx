@@ -24,7 +24,9 @@ export default function SDWDashboard({ onLogout }) {
       .finally(() => setLoading(false));
   }, []);
 
- const pending = events.filter(e => getStatus(e) === "PENDING_SDW");
+ const pending = events.filter(e =>
+  getStatus(e) === "PENDING_SDW"
+);
 // ❌ old
 // const approved = events.filter(isFinalApproved);
 

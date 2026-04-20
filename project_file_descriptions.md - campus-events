@@ -1,0 +1,124 @@
+# Campus Event Management - File Descriptions
+
+This document provides a simple, easy-to-understand explanation of every major file in your project, broken down by Backend (Spring Boot) and Frontend (React/Vite).
+
+---
+
+## 🏗️ Backend (Spring Boot)
+The backend is built with Spring Boot using a standard layered architecture: **Controllers** (handle web requests), **Services** (business logic), **Repositories** (database operations), and **Models** (data structure). It also includes a **Security** layer for authentication.
+
+### Core Application
+*   **`EventmanagementApplication.java`**: The starting point of your Spring Boot backend. It contains the `main` method that boots up the server.
+*   **`resources/application.properties`**: The main configuration file. It stores your database connection details, server port (usually 8080), and JWT secret keys.
+*   **`EventmanagementApplicationTests.java`**: A baseline file for writing automated tests to ensure your backend loads correctly without errors.
+
+### 📍 Controllers (`controller/`)
+Controllers act as traffic cops. They receive HTTP requests (like GET, POST) from the React frontend and route them to the right service.
+*   **`AuthController.java`**: Handles user login and signup requests.
+*   **`EventController.java`**: Handles requests related to events (e.g., "get all events", "create a new event").
+*   **`RegistrationController.java`**: Handles requests from users trying to register for an event.
+*   **`AttendanceController.java`**: Manages requests related to marking and checking attendance for events.
+*   **`FacultyController.java`**: Handles requests specific to faculty members, like approving pending events.
+*   **`HelloController.java`**: A simple test controller, usually used to check if the server is up and running.
+
+### ⚙️ Services (`service/`)
+Services contain the actual "business logic" or rules of your application.
+*   **`AuthService.java`**: Contains the logic to verify user passwords during login and to safely create new user accounts.
+*   **`EventService.java`**: Contains the rules for creating events, updating their status, and ensuring only valid events are saved.
+*   **`RegistrationService.java`**: Manages the logic of a user registering for an event (e.g., checking if the event is full).
+*   **`AttendanceService.java`**: Logic for recording who attended an event and calculating attendance stats.
+*   **`FacultyService.java`**: Contains logic for faculty-specific actions, like workflow approvals.
+
+### 🗄️ Repositories (`repository/`)
+Repositories talk directly to the database. They provide a simple way to create, read, update, and delete records without writing complex SQL queries.
+*   **`UserRepository.java`**: Retrieves and saves user data to the database.
+*   **`EventRepository.java`**: Retrieves and saves event data.
+*   **`RegistrationRepository.java`**: Manages the database records of who is registered for what event.
+*   **`AttendanceRepository.java`**: Manages the database records of event attendance.
+*   **`ClubRepository.java`**: Manages data for different clubs or organizations hosting the events.
+
+### 📦 Models (`model/`)
+Models (or Entities) represent the shape of your data in the database. Every model usually corresponds to a database table.
+*   **`User.java`**: Defines what makes up a user (e.g., id, name, email, password, role).
+*   **`Event.java`**: Defines an event (e.g., title, description, date, location).
+*   **`Registration.java`**: The link between a User and an Event, showing that a specific person signed up for a specific event.
+*   **`EventStatus.java`**: An "Enum" (a strict list of options) defining the state of an event (e.g., PENDING, APPROVED, REJECTED).
+*   **`ParticipationStatus.java`**: An Enum defining a user's status for an event (e.g., REGISTERED, ATTENDED, CANCELLED).
+*   **`Roles.java`**: An Enum defining user access levels (e.g., STUDENT, ORGANIZER, FACULTY, HOD).
+
+### 🔒 Security (`security/`)
+Files that protect your backend from unauthorized access using JWT (JSON Web Tokens).
+*   **`SecurityConfig.java`**: The main security rulebook. It decides which URLs are public (like login) and which require the user to be logged in.
+*   **`JwtUtil.java`**: A helper class that generates JWT "passports" when users log in and verifies them on subsequent requests.
+*   **`JwtFilter.java`**: A guard that checks every incoming request to see if it contains a valid JWT passport before letting it reach the controllers.
+
+---
+
+## 🎨 Frontend (React + Vite)
+The frontend is a Single Page Application built with React, Vite (for fast building), and Tailwind CSS (for styling).
+
+### Root Configuration Files
+*   **`package.json` & `package-lock.json`**: Lists all the external libraries your project needs (like React, Axios, React Router) and script commands (like `npm run dev`).
+*   **`vite.config.js`**: Settings for Vite, the tool that runs your local development server and bundles your code for production.
+*   **`tailwind.config.js` & `postcss.config.js`**: Configuration files for Tailwind CSS, allowing you to customize your styling theme, colors, and layout utilities.
+*   **`eslint.config.js`**: Rules for finding and fixing problems in your JavaScript code (Code Linting).
+*   **`index.html`**: The single HTML file that loads your React application.
+
+### 🚀 Application Entry & Global Settings (`src/`)
+*   **`main.jsx`**: The starting point of your React app. It grabs the `App` component and injects it into `index.html`.
+*   **`App.jsx`**: The main container component. It sets up "Routing" (React Router), dictating which Page component to show based on the URL the user is visiting.
+*   **`App.css` & `index.css`**: Your main stylesheet files. `index.css` is usually where Tailwind is imported.
+*   **`constants.js`**: A place to store global variables (like your backend API base URL or role names) so you don't have to re-type them everywhere.
+*   **`utils.js`**: A file for reusable helper functions (e.g., formatting dates, capitalizing text).
+*   **`api/axios.js`**: Configures Axios (the tool used to make HTTP requests to your backend). It's usually set up here to automatically attach the JWT token to every request.
+
+### 🧩 Components (`src/components/`)
+Reusable UI building blocks used across different pages.
+*   **`Navbar.jsx`**: The top navigation bar (usually contains the profile icon and logout button).
+*   **`Sidebar.jsx`**: The side menu for navigating between different dashboard views.
+*   **`Layout.jsx`**: A wrapper component that combines the Navbar, Sidebar, and the main content area so you don't have to rewrite them on every page.
+*   **`EventCard.jsx`**: A small, rectangular card that displays a quick summary of an event (title, date).
+*   **`EventDetailDrawer.jsx`**: A sliding side-panel that pops out to show the full details of an event when clicked.
+*   **`RegistrationModal.jsx`**: A pop-up window asking the user to confirm they want to register for an event.
+*   **`ApprovalModal.jsx`**: A pop-up window used by faculty to approve or reject an event proposal, often including a space for comments.
+*   **`ActivityPanel.jsx`**: A section that shows a timeline or list of recent notifications/activities.
+*   **`PageHeader.jsx`**: The title bar at the top of a page view.
+*   **`StatCard.jsx`**: A small widget displaying numbers, like "Total Events" or "Pending Approvals", used on dashboards.
+*   **`WorkFlowBadge.jsx`**: A visual pill/tag showing the status of an event (e.g., green for Approved, yellow for Pending).
+
+### 🖼️ Layouts (`src/layouts/`)
+*   **`DashboardLayout.jsx`**: A specific layout structure used for logged-in users, enforcing the Sidebar and Navbar structure around the main page content.
+
+### 📄 Pages (`src/pages/`)
+These are the main screens/views that users navigate to. They are assembled using the smaller Components.
+
+#### General Pages
+*   **`Home.jsx` / `HomePage.jsx`**: The public landing page of the application.
+*   **`Login.jsx` & `Signup.jsx`**: Forms for authenticating and registering new users.
+*   **`Events.jsx`**: A generic page listing all public/approved events.
+*   **`analytics/Analytics.jsx`**: A page displaying charts and statistics about the system.
+
+#### Role: Student Pages (`src/pages/student/`)
+*   **`StudentDashboard.jsx`**: The home screen for students, showing quick stats and upcoming events.
+*   **`StudentEvents.jsx`**: A page where students can browse and search for events to join.
+*   **`StudentRegistrations.jsx`**: A page listing all the events the student has already signed up for.
+
+#### Role: Organizer Pages (`src/pages/organizer/`)
+*   **`OrganizerDashboard.jsx`**: Home screen for event organizers.
+*   **`CreateEvent.jsx` / `OrganizerCreateEvent.jsx`**: A complex form where organizers propose new events, setting dates, venues, and descriptions.
+*   **`Organizerparticipants.jsx`**: A page to view and manage the list of students who have registered for their events.
+*   **`SubmitBudget.jsx`**: A form to propose a financial budget for an upcoming event.
+*   **`PostEventReport.jsx`**: A form to submit a summary/report after an event has successfully concluded.
+
+#### Role: Faculty Pages (`src/pages/faculty/`)
+*   **`FacultyDashboard.jsx`**: Home screen for faculty members.
+*   **`FacultyApprovals.jsx`**: A crucial page where faculty can see pending event proposals and choose to approve or reject them.
+*   **`FacultyReports.jsx`**: A page to view post-event reports submitted by organizers.
+
+#### Role: Head of Department (HOD) Pages (`src/pages/hod/`)
+*   **`HodDashboard.jsx`**: Home screen for HODs.
+*   **`HodApprovals.jsx`**: Similar to Faculty Approvals, but represents a higher level in the approval workflow.
+
+#### Role: Student Welfare (SDW) Pages (`src/pages/sdw/`)
+*   **`SDWDashboard.jsx`**: Home screen for the Dean/Student Welfare office.
+*   **`SDWApprovals.jsx`**: The final stage of approvals for high-level or campus-wide events.

@@ -4,7 +4,7 @@ import api from "../../api/axios";
 import DashboardLayout   from "../../layouts/DashboardLayout";
 import StatCard          from "../../components/StatCard";
 import PageHeader        from "../../components/PageHeader";
-import WorkflowBadge     from "../../components/WorkFlowBadge";
+import WorkflowBadge     from "../../components/WorkflowBadge";
 import EventDetailDrawer from "../../components/EventDetailDrawer";
 import { STATUS_META }   from "../../constants";
 import {
@@ -19,18 +19,7 @@ function eventHasEnded(ev) {
 }
 
 function getStatus(ev) {
-  // handles both string and object (your backend change)
-  if (!ev) return "UNKNOWN";
-
-  if (typeof ev.status === "string") {
-    return ev.status;
-  }
-
-  if (typeof ev.status === "object" && ev.status !== null) {
-    return ev.status.name || "UNKNOWN";
-  }
-
-  return "UNKNOWN";
+  return ev.status; // adjust based on your backend
 }
 
 export default function OrganizerDashboard({ onLogout }) {
@@ -68,7 +57,7 @@ export default function OrganizerDashboard({ onLogout }) {
     total:    events.length,
     pending:  events.filter(e => ["PENDING_FACULTY","PENDING_SDW","PENDING_HOD"].includes(getStatus(e))).length,
     approved: events.filter(e => getStatus(e) === "APPROVED").length,
-    rejected: events.filter(e => ["FACULTY_REJECTED","SDW_REJECTED","HOD_REJECTED"].includes(getStatus(e))).length,
+    rejected: events.filter(e => getStatus(e) === "REJECTED").length,
   };
 
   // Determine what action buttons to show per event
@@ -79,9 +68,7 @@ export default function OrganizerDashboard({ onLogout }) {
 
     // Edit: allowed when rejected OR when pending/in-review (not when APPROVED and live)
     const canEdit = [
-      "PENDING_FACULTY","FACULTY_REJECTED",
-      "PENDING_SDW","SDW_REJECTED",
-      "PENDING_HOD","HOD_REJECTED",
+      "PENDING_FACULTY","PENDING_SDW","PENDING_HOD","REJECTED",
     ].includes(status);
 
     if (canEdit) {
@@ -94,7 +81,7 @@ export default function OrganizerDashboard({ onLogout }) {
     }
 
     // Submit budget: only after faculty approval
-    if (status === "FACULTY_APPROVED") {
+    if (status === "PENDING_SDW") {  // organizer submitted, budget already included
       actions.push({
         label: "Submit Budget →",
         icon:  IndianRupee,
@@ -114,7 +101,7 @@ export default function OrganizerDashboard({ onLogout }) {
     }
 
     // Delete: only when not approved or not yet in SDW/HoD hands
-    const canDelete = ["PENDING_FACULTY","FACULTY_REJECTED"].includes(status);
+    const canDelete = status === "PENDING_FACULTY" || status === "REJECTED";
     if (canDelete) {
       actions.push({
         label:     deleting === ev.id ? "…" : "Delete",
@@ -200,7 +187,7 @@ export default function OrganizerDashboard({ onLogout }) {
                     </div>
 
                     {/* Reviewer feedback — show for rejected only */}
-                    {["FACULTY_REJECTED","SDW_REJECTED","HOD_REJECTED"].includes(getStatus(ev)) &&
+                    {getStatus(ev) === "REJECTED" &&
                       (ev.facultyComment || ev.sdwComment || ev.hodComment) && (
                       <div className="mt-2 bg-red-50 border border-red-100 rounded-lg p-2">
                         <p className="text-xs text-red-600 font-medium mb-0.5">
