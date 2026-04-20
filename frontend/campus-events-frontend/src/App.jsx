@@ -11,7 +11,7 @@ import StudentRegistrations from "./pages/student/StudentRegistrations";
 
 import OrganizerDashboard    from "./pages/organizer/OrganizerDashboard";
 import CreateEvent           from "./pages/organizer/CreateEvent";
-import OrganizerParticipants from "./pages/organizer/OrganizerParticipants";
+import OrganizerParticipants from "./pages/organizer/Organizerparticipants";
 import SubmitBudget          from "./pages/organizer/SubmitBudget";
 import PostEventReport       from "./pages/organizer/PostEventReport";
 
